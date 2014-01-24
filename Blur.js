@@ -15,8 +15,8 @@
         constructor: Blur,
 
         radius: 1,
-        matrix: null,
         gaussian: false,
+        matrix: null,
 
         init: function() {
             this.setRadius(this.radius);
@@ -346,7 +346,7 @@
                 sy = 0,
                 width = canvas.width,
                 height = canvas.height;
-            if (!canvas.getContext) {
+            if (!canvas.getContext||ext) {
                 var img = canvas;
                 canvas = this.createSourceCanvas(img, sx, sy, width, height, radius, ext);
                 if (ext !== false) {
