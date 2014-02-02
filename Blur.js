@@ -1,5 +1,18 @@
 "use strict";
 
+/*
+
+var blur= new Blur({
+    radius: 20,
+    gaussian : true,
+});
+blur.init();
+
+var img =  [ a  Image or Canvas ]
+var blurImg = blur.blurRGBA(img, null, true);
+
+*/
+
 (function(exports) {
 
     var Blur = exports.Blur = function(options) {
@@ -22,21 +35,21 @@
             this.setRadius(this.radius);
         },
 
-        setRadius: function(radius){
+        setRadius: function(radius) {
             this.radius = Math.ceil(radius || 1);
             if (this.gaussian) {
                 this.matrix = this.makeMatrix(this.radius);
             }
         },
 
-        useGaussian: function(){
-            this.gaussian=true;
+        useGaussian: function() {
+            this.gaussian = true;
             this.setRadius(this.radius);
         },
 
-        useStack: function(){
-            this.gaussian=false;
-            this.matrix=null;
+        useStack: function() {
+            this.gaussian = false;
+            this.matrix = null;
         },
 
         makeMatrix: function(radius) {
@@ -67,7 +80,8 @@
         },
 
 
-        doGaussian: function(pixels, width, height) {
+        doGaussian: function(pixels, width, height, outPixels) {
+            outPixels = outPixels || pixels;
             var radius = this.radius;
             var matrix = this.matrix;
             var buff = [];
@@ -98,7 +112,7 @@
                         b += pixels[idxF + 2] * f * k;
                         a += alpha * f;
                     }
-                    if (a === 0) {
+                    if (a == 0) {
                         k = 0
                     } else {
                         k = 255 / a;
@@ -134,14 +148,14 @@
                         b += buff[idxF + 2] * f * k;
                         a += alpha * f;
                     }
-                    if (a === 0) {
-                        pixels[idx]=pixels[idx+1]=pixels[idx+2]=pixels[idx+3]=0;
+                    if (a == 0) {
+                        outPixels[idx] = outPixels[idx + 1] = outPixels[idx + 2] = outPixels[idx + 3] = 0;
                     } else {
                         k = 255 / a;
-                        pixels[idx] = this.clamp(r * k);
-                        pixels[idx + 1] = this.clamp(g * k);
-                        pixels[idx + 2] = this.clamp(b * k);
-                        pixels[idx + 3] = this.clamp(a);
+                        outPixels[idx] = this.clamp(r * k);
+                        outPixels[idx + 1] = this.clamp(g * k);
+                        outPixels[idx + 2] = this.clamp(b * k);
+                        outPixels[idx + 3] = this.clamp(a);
                     }
                 }
             }
@@ -346,7 +360,7 @@
                 sy = 0,
                 width = canvas.width,
                 height = canvas.height;
-            if (!canvas.getContext||ext) {
+            if (!canvas.getContext || ext) {
                 var img = canvas;
                 canvas = this.createSourceCanvas(img, sx, sy, width, height, radius, ext);
                 if (ext !== false) {
@@ -373,7 +387,6 @@
             } else {
                 this.doStack(pixels, width, height);
             }
-
             outContext.putImageData(imageData, sx, sy);
 
             return outCanvas;
@@ -399,13 +412,16 @@
         },
 
         clamp: function(v) {
-            return v < 255 ? (v > 0 ? v : 0) : 255;
+            return v < 255 ? (v > 0 ? (v | 0) : 0) : 255;
         },
 
         createCanvas: function(width, height) {
             var canvas = document.createElement("canvas");
+            canvas.retinaResolutionEnabled = false;
             canvas.width = width;
             canvas.height = height;
+            // canvas.MSAAEnabled = true;
+            // canvas.MSAASamples = 4;
             return canvas;
         },
 
